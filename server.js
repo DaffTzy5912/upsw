@@ -6,6 +6,7 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const PORT = 3000;
+const path = require('path');
 
 // Pastikan file database ada
 const databasePath = 'database.json';
@@ -20,6 +21,11 @@ let database = JSON.parse(fs.readFileSync(databasePath, 'utf-8'));
 
 app.use(express.static(__dirname));
 app.use(express.json({ limit: '50mb' }));
+
+// Route untuk halaman utama - arahkan ke landing.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'landing.html'));
+});
 
 app.post('/daftar', (req, res) => {
   const { nama, foto } = req.body;
