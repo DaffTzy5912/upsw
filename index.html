@@ -5,6 +5,54 @@
   <title>Status</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="ZenmaTH.css">
+  <style>
+    /* Tambahan style untuk status milik sendiri */
+    .status-item.my-status {
+      border: 2px solid #4285f4;
+      position: relative;
+    }
+    
+    .status-item.my-status::before {
+      content: "Status Saya";
+      position: absolute;
+      top: -10px;
+      left: 10px;
+      background: #4285f4;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    
+    .status-item {
+      position: relative;
+    }
+    
+    .status-preview {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    
+    .preview-container {
+      position: relative;
+      width: 100%;
+      margin-top: 8px;
+    }
+    
+    .video-preview::after {
+      content: "▶";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 30px;
+      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+  </style>
 </head>
 <body>
   <div class="header">
@@ -16,8 +64,17 @@
 
   <script>
     let allStatus = [];
+    let currentUser = null;
 
     async function loadStatus() {
+      // Ambil informasi pengguna saat ini dari localStorage
+      currentUser = JSON.parse(localStorage.getItem("akun"));
+      
+      if (!currentUser) {
+        window.location.href = "landing.html";
+        return;
+      }
+      
       const res = await fetch('/status');
       const data = await res.json();
       allStatus = data;
@@ -27,10 +84,24 @@
     function renderStatusList() {
       const container = document.getElementById('statusList');
       container.innerHTML = '';
-      allStatus.forEach((s, i) => {
+      
+      // Filter status milik sendiri untuk ditampilkan di bagian atas
+      const myStatus = allStatus.filter(s => s.nama === currentUser.nama);
+      const othersStatus = allStatus.filter(s => s.nama !== currentUser.nama);
+      
+      // Gabungkan dengan prioritas status sendiri di atas
+      const sortedStatus = [...myStatus, ...othersStatus];
+      
+      sortedStatus.forEach((s, i) => {
         const el = document.createElement('div');
         el.className = 'status-item';
-        el.onclick = () => viewStatus(i);
+        
+        // Tambahkan class khusus jika status milik sendiri
+        if (s.nama === currentUser.nama) {
+          el.classList.add('my-status');
+        }
+        
+        el.onclick = () => viewStatus(s.id || allStatus.findIndex(status => status === s));
         
         // Menambahkan preview file (thumbnail) jika ada
         let previewHtml = '';
@@ -53,10 +124,37 @@
       });
     }
 
-    function viewStatus(index) {
-      const s = allStatus[index];
-      localStorage.setItem("viewStatus", JSON.stringify(s));
-      window.location.href = "view.html";
+    function viewStatus(statusId) {
+      // Jika ID adalah indeks (untuk kompatibilitas dengan data lama)
+      if (typeof statusId === 'number') {
+        const s = allStatus[statusId];
+        if (s) {
+          // Menyimpan ID status jika ada
+          s.viewedBy = currentUser.nama;
+          localStorage.setItem("viewStatus", JSON.stringify(s));
+          window.location.href = "view.html";
+        }
+      } else {
+        // Menggunakan ID dari status baru
+        const status = allStatus.find(s => s.id === statusId);
+        if (status) {
+          // Catat viewer di server jika bukan status sendiri
+          if (status.nama !== currentUser.nama) {
+            fetch('/status/view', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                statusId: statusId,
+                viewerName: currentUser.nama,
+                viewerPhoto: currentUser.foto
+              })
+            });
+          }
+          
+          localStorage.setItem("viewStatus", JSON.stringify(status));
+          window.location.href = "view.html";
+        }
+      }
     }
 
     // Fungsi logout
