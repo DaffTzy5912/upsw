@@ -6,9 +6,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Status</h2>
+  <div class="header">
+    <h2>Status</h2>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </div>
   <div id="statusList" class="status-list"></div>
-  <a href="upload.html">+ Tambah Status</a>
+  <a href="upload.html" class="add-btn">+ Tambah Status</a>
 
   <script>
     let allStatus = [];
@@ -54,15 +57,26 @@
       window.location.href = "view.html";
     }
 
+    // Fungsi logout
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      localStorage.removeItem("akun");
+      window.location.href = "landing.html";
+    });
+
     // Check login status
-    const akun = localStorage.getItem("akun");
-    if (!akun) {
-      window.location.href = "login.html";
-    } else {
-      loadStatus();
-      // Refresh status setiap 5 detik
-      setInterval(loadStatus, 5000);
+    function checkLogin() {
+      const akun = localStorage.getItem("akun");
+      if (!akun) {
+        window.location.href = "landing.html";
+      } else {
+        loadStatus();
+        // Refresh status setiap 5 detik
+        setInterval(loadStatus, 5000);
+      }
     }
+
+    // Periksa status login saat halaman dimuat
+    checkLogin();
   </script>
 </body>
 </html>
