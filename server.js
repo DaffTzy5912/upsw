@@ -49,7 +49,9 @@ app.post('/upload', (req, res) => {
     fotoProfil,
     caption,
     file,
-    waktu: Date.now()
+    waktu: Date.now(),
+    id: Date.now().toString(), // Tambahkan ID unik untuk status
+    dilihatOleh: [] // Tambahkan array untuk menyimpan siapa yang melihat
   };
 
   database.status.push(newStatus);
@@ -60,6 +62,46 @@ app.post('/upload', (req, res) => {
 
 app.get('/status', (req, res) => {
   res.json(database.status.slice(-30)); // Ambil 30 status terakhir
+});
+
+// Endpoint baru untuk mencatat pengguna yang melihat status
+app.post('/status/view', (req, res) => {
+  const { statusId, viewerName, viewerPhoto } = req.body;
+  
+  // Cari status dengan ID yang sesuai
+  const statusIndex = database.status.findIndex(s => s.id === statusId);
+  
+  if (statusIndex !== -1) {
+    // Periksa apakah pengguna sudah melihat status ini sebelumnya
+    const alreadyViewed = database.status[statusIndex].dilihatOleh.some(
+      viewer => viewer.nama === viewerName
+    );
+    
+    // Jika belum melihat, tambahkan ke daftar
+    if (!alreadyViewed && database.status[statusIndex].nama !== viewerName) {
+      database.status[statusIndex].dilihatOleh.push({
+        nama: viewerName,
+        fotoProfil: viewerPhoto,
+        waktuDilihat: Date.now()
+      });
+      
+      fs.writeFileSync(databasePath, JSON.stringify(database, null, 2));
+    }
+    
+    res.json({ success: true });
+  } else {
+    res.json({ success: false, message: "Status tidak ditemukan" });
+  }
+});
+
+// Endpoint untuk mendapatkan status berdasarkan ID
+app.get('/status/:id', (req, res) => {
+  const status = database.status.find(s => s.id === req.params.id);
+  if (status) {
+    res.json(status);
+  } else {
+    res.status(404).json({ message: "Status tidak ditemukan" });
+  }
 });
 
 http.listen(PORT, () => {
