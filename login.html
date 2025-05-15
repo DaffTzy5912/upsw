@@ -11,8 +11,15 @@
     <input type="text" id="nama" placeholder="Masukkan nama kamu" required><br>
     <button type="submit">Login</button>
   </form>
+  <p class="register-link">Belum punya akun? <a href="daftar.html">Daftar disini</a></p>
 
   <script>
+    // Check login status terlebih dahulu
+    const akun = localStorage.getItem("akun");
+    if (akun) {
+      window.location.href = "index.html";
+    }
+
     document.getElementById("loginForm").onsubmit = async function(e) {
       e.preventDefault();
       const nama = document.getElementById("nama").value;
