@@ -19,7 +19,7 @@ body {
 .back-button {
   display: inline-block;
   text-decoration: none;
-  color: #555;
+  color: #fff;
   font-size: 1rem;
   margin-bottom: 20px;
   transition: color 0.3s ease;
