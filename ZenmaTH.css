@@ -1,0 +1,187 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+  color: #3b4a54;
+  max-width: 500px;
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: #00a884;
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.header h2 {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  background-color: white;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+  position: relative;
+  border-left: 3px solid #00a884;
+}
+
+.status-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #00a884;
+}
+
+.preview-container {
+  width: 100%;
+  height: 200px;
+  margin: 12px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f0f2f5;
+  position: relative;
+}
+
+.video-preview::after {
+  content: "▶";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.4);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-caption {
+  font-size: 14px;
+  color: #667781;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.add-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #00a884;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.add-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Animasi transisi saat memuat status */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.status-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Style untuk menandai status yang belum dilihat */
+.status-item::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  background-color: #00a884;
+  border-radius: 50%;
+}
+
+/* Tampilan responsif */
+@media screen and (max-width: 480px) {
+  body {
+    width: 100%;
+  }
+  
+  .status-list {
+    padding: 4px;
+  }
+  
+  .status-item {
+    padding: 10px;
+  }
+  
+  .preview-container {
+    height: 160px;
+  }
+}
