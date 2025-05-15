@@ -37,13 +37,14 @@
           if (s.file.includes('image')) {
             previewHtml = `<div class="preview-container"><img src="${s.file}" class="status-preview"></div>`;
           } else if (s.file.includes('video')) {
-            previewHtml = `<div class="preview-container"><video src="${s.file}" class="status-preview"></video></div>`;
+            // Menggunakan class khusus untuk container video dan ikon play
+            previewHtml = `<div class="preview-container video-preview"><video src="${s.file}" class="status-preview" preload="metadata"></video></div>`;
           }
         }
         
         el.innerHTML = `
           <img src="${s.fotoProfil}" class="profile-pic">
-          <div style="margin-top: 8px; color: white;">${s.nama}</div>
+          <div style="margin-top: 8px;">${s.nama}</div>
           ${previewHtml}
           ${s.caption ? `<div class="status-caption">${s.caption.substring(0, 20)}${s.caption.length > 20 ? '...' : ''}</div>` : ''}
         `;
