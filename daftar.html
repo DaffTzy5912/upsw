@@ -12,8 +12,15 @@
     <input type="file" id="foto" accept="image/*" required><br>
     <button type="submit">Daftar</button>
   </form>
+  <p class="login-link">Sudah punya akun? <a href="login.html">Login disini</a></p>
 
   <script>
+    // Check login status terlebih dahulu
+    const akun = localStorage.getItem("akun");
+    if (akun) {
+      window.location.href = "index.html";
+    }
+
     document.getElementById("daftarForm").onsubmit = async function(e) {
       e.preventDefault();
       const nama = document.getElementById("nama").value;
