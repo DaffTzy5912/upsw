@@ -5,7 +5,7 @@
   <title>Lihat Status</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="view.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display :wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
   <style>
     /* Tambahan style untuk tampilan status */
     .status-media {
@@ -18,32 +18,171 @@
       margin-bottom: 15px;
       display: block;
     }
+    
+    /* Style untuk viewer list */
+    .viewer-section {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    
+    .viewer-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #333;
+    }
+    
+    .viewer-header svg {
+      margin-right: 8px;
+    }
+    
+    .viewer-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .viewer-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .viewer-item img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+    }
+    
+    .viewer-name {
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .no-viewers {
+      color: #888;
+      font-style: italic;
+      margin-top: 10px;
+    }
+    
+    /* Menampilkan pemilik status sendiri */
+    .status-owner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status-owner span {
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    .status-owner.my-status strong::after {
+      content: " (Saya)";
+      color: #4285f4;
+      font-size: 0.8em;
+    }
   </style>
 </head>
 <body>
   <a href="index.html" class="back-button">← Kembali</a>
   <div id="viewContainer"></div>
+  <div id="viewerContainer" class="viewer-section"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const s = JSON.parse(localStorage.getItem("viewStatus"));
-      const container = document.getElementById('viewContainer');
-      
-      if (!s) {
-        container.innerHTML = "<p>Status tidak ditemukan</p>";
-      } else {
-        container.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;">
-            <img src="${s.fotoProfil}" class="profile-pic">
-            <strong>${s.nama}</strong>
-          </div>
-          <div style="margin-top:15px;">
-            ${s.caption ? `<p>${s.caption}</p>` : ""}
-            ${s.file ? renderMedia(s.file) : ""}
-          </div>
-        `;
+    let currentUser = null;
+    let currentStatus = null;
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      currentUser = JSON.parse(localStorage.getItem("akun"));
+      if (!currentUser) {
+        window.location.href = "landing.html";
+        return;
       }
+      
+      const s = JSON.parse(localStorage.getItem("viewStatus"));
+      if (!s) {
+        document.getElementById('viewContainer').innerHTML = "<p>Status tidak ditemukan</p>";
+        return;
+      }
+      
+      currentStatus = s;
+      
+      // Jika status memiliki ID, ambil data terbaru dari server
+      if (s.id) {
+        try {
+          const response = await fetch(`/status/${s.id}`);
+          if (response.ok) {
+            const updatedStatus = await response.json();
+            currentStatus = updatedStatus;
+          }
+        } catch (error) {
+          console.error('Error fetching status:', error);
+        }
+      }
+      
+      renderStatus();
+      renderViewers();
     });
+    
+    function renderStatus() {
+      const container = document.getElementById('viewContainer');
+      const isMyStatus = currentStatus.nama === currentUser.nama;
+      
+      // Tambahkan class untuk status sendiri
+      const ownerClass = isMyStatus ? 'my-status' : '';
+      
+      container.innerHTML = `
+        <div class="status-owner ${ownerClass}" style="display:flex;align-items:center;gap:10px;">
+          <img src="${currentStatus.fotoProfil}" class="profile-pic">
+          <strong>${currentStatus.nama}</strong>
+        </div>
+        <div style="margin-top:15px;">
+          ${currentStatus.caption ? `<p>${currentStatus.caption}</p>` : ""}
+          ${currentStatus.file ? renderMedia(currentStatus.file) : ""}
+        </div>
+      `;
+    }
+    
+    function renderViewers() {
+      const container = document.getElementById('viewerContainer');
+      const isMyStatus = currentStatus.nama === currentUser.nama;
+      
+      // Jika bukan status sendiri, tidak perlu menampilkan daftar viewer
+      if (!isMyStatus) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      // Tampilkan daftar viewer jika ini adalah status kita
+      const viewers = currentStatus.dilihatOleh || [];
+      
+      container.innerHTML = `
+        <div class="viewer-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Dilihat oleh (${viewers.length})
+        </div>
+        <div class="viewer-list">
+          ${viewers.length > 0 ? 
+            viewers.map(viewer => `
+              <div class="viewer-item">
+                <img src="${viewer.fotoProfil}" alt="${viewer.nama}">
+                <div class="viewer-name">${viewer.nama}</div>
+              </div>
+            `).join('') 
+            : 
+            '<div class="no-viewers">Belum ada yang melihat status ini</div>'
+          }
+        </div>
+      `;
+    }
 
     // Fungsi untuk render media berdasarkan tipe file
     function renderMedia(fileUrl) {
