@@ -2,55 +2,136 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Status</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="ZenmaTH.css">
+  <title>Status</title>
   <style>
-    /* Tambahan style untuk status milik sendiri */
-    .status-item.my-status {
-      border: 2px solid #4285f4;
-      position: relative;
+    body {
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121b22;
+      color: white;
     }
     
-    .status-item.my-status::before {
-      content: "Status Saya";
-      position: absolute;
-      top: -10px;
-      left: 10px;
-      background: #4285f4;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 12px;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #1f2c34;
+    }
+    
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500;
+    }
+    
+    .status-section {
+      padding: 5px 0;
+      background-color: #121b22;
+      margin-bottom: 15px;
+    }
+    
+    .status-container {
+      display: flex;
+      overflow-x: auto;
+      padding: 10px;
+      scrollbar-width: none; /* Hide scrollbar for Firefox */
+    }
+    
+    .status-container::-webkit-scrollbar {
+      display: none; /* Hide scrollbar for Chrome/Safari */
     }
     
     .status-item {
+      min-width: 150px;
+      height: 250px;
+      margin-right: 10px;
       position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #0d3245;
     }
     
-    .status-preview {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-top: 8px;
+    .my-status {
+      min-width: 80px;
+      height: 250px;
+      margin-right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     
-    .preview-container {
-      position: relative;
-      width: 100%;
-      margin-top: 8px;
+    .add-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #00a884;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
     }
     
-    .video-preview::after {
-      content: "▶";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    .add-button span {
+      font-size: 40px;
       color: white;
-      font-size: 30px;
-      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+      line-height: 1;
+    }
+    
+    .status-name {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .profile-circle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #00a884;
+      object-fit: cover;
+    }
+    
+    .profile-name {
+      margin-left: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .status-text {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      font-size: 16px;
+      text-align: center;
+    }
+    
+    /* For logout button */
+    .logout-btn {
+      background-color: transparent;
+      color: #00a884;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background-color: #263238;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -59,124 +140,94 @@
     <h2>Status</h2>
     <button id="logoutBtn" class="logout-btn">Logout</button>
   </div>
-  <div id="statusList" class="status-list"></div>
-  <a href="upload.html" class="add-btn">+ Tambah Status</a>
+  
+  <!-- First row of status -->
+  <div class="status-section">
+    <div class="status-container" id="statusRow1">
+      <!-- My Status with "+" button -->
+      <div class="my-status">
+        <div class="add-button">
+          <span>+</span>
+        </div>
+        <div class="status-name">Tambah Status</div>
+      </div>
+      
+      <!-- Status items will be generated here -->
+    </div>
+  </div>
+  
+  <div class="section-divider"></div>
+  
+  <!-- Second row of status -->
+  <div class="status-section">
+    <div class="status-container" id="statusRow2">
+      <!-- Status items will be generated here -->
+    </div>
+  </div>
 
   <script>
-    let allStatus = [];
-    let currentUser = null;
-
-    async function loadStatus() {
-      // Ambil informasi pengguna saat ini dari localStorage
-      currentUser = JSON.parse(localStorage.getItem("akun"));
+    function renderStatus() {
+      const row1 = document.getElementById('statusRow1');
+      const row2 = document.getElementById('statusRow2');
       
-      if (!currentUser) {
-        window.location.href = "landing.html";
-        return;
-      }
+      // Keep the "Add Status" button in row1
+      const addStatus = row1.querySelector('.my-status');
+      row1.innerHTML = '';
+      row1.appendChild(addStatus);
       
-      const res = await fetch('/status');
-      const data = await res.json();
-      allStatus = data;
-      renderStatusList();
-    }
-
-    function renderStatusList() {
-      const container = document.getElementById('statusList');
-      container.innerHTML = '';
+      // Clear row2
+      row2.innerHTML = '';
       
-      // Filter status milik sendiri untuk ditampilkan di bagian atas
-      const myStatus = allStatus.filter(s => s.nama === currentUser.nama);
-      const othersStatus = allStatus.filter(s => s.nama !== currentUser.nama);
+      // Add first 3 statuses to row1
+      dummyStatuses.slice(0, 3).forEach(status => {
+        const statusEl = createStatusElement(status);
+        row1.appendChild(statusEl);
+      });
       
-      // Gabungkan dengan prioritas status sendiri di atas
-      const sortedStatus = [...myStatus, ...othersStatus];
-      
-      sortedStatus.forEach((s, i) => {
-        const el = document.createElement('div');
-        el.className = 'status-item';
-        
-        // Tambahkan class khusus jika status milik sendiri
-        if (s.nama === currentUser.nama) {
-          el.classList.add('my-status');
-        }
-        
-        el.onclick = () => viewStatus(s.id || allStatus.findIndex(status => status === s));
-        
-        // Menambahkan preview file (thumbnail) jika ada
-        let previewHtml = '';
-        if (s.file) {
-          if (s.file.includes('image')) {
-            previewHtml = `<div class="preview-container"><img src="${s.file}" class="status-preview"></div>`;
-          } else if (s.file.includes('video')) {
-            // Menggunakan class khusus untuk container video dan ikon play
-            previewHtml = `<div class="preview-container video-preview"><video src="${s.file}" class="status-preview" preload="metadata"></video></div>`;
-          }
-        }
-        
-        el.innerHTML = `
-          <img src="${s.fotoProfil}" class="profile-pic">
-          <div style="margin-top: 8px;">${s.nama}</div>
-          ${previewHtml}
-          ${s.caption ? `<div class="status-caption">${s.caption.substring(0, 20)}${s.caption.length > 20 ? '...' : ''}</div>` : ''}
-        `;
-        container.appendChild(el);
+      // Add next 3 statuses to row2
+      dummyStatuses.slice(3, 6).forEach(status => {
+        const statusEl = createStatusElement(status);
+        row2.appendChild(statusEl);
       });
     }
-
-    function viewStatus(statusId) {
-      // Jika ID adalah indeks (untuk kompatibilitas dengan data lama)
-      if (typeof statusId === 'number') {
-        const s = allStatus[statusId];
-        if (s) {
-          // Menyimpan ID status jika ada
-          s.viewedBy = currentUser.nama;
-          localStorage.setItem("viewStatus", JSON.stringify(s));
-          window.location.href = "view.html";
-        }
-      } else {
-        // Menggunakan ID dari status baru
-        const status = allStatus.find(s => s.id === statusId);
-        if (status) {
-          // Catat viewer di server jika bukan status sendiri
-          if (status.nama !== currentUser.nama) {
-            fetch('/status/view', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                statusId: statusId,
-                viewerName: currentUser.nama,
-                viewerPhoto: currentUser.foto
-              })
-            });
-          }
-          
-          localStorage.setItem("viewStatus", JSON.stringify(status));
-          window.location.href = "view.html";
-        }
-      }
+    
+    function createStatusElement(status) {
+      const el = document.createElement('div');
+      el.className = 'status-item';
+      el.innerHTML = `
+        <div class="profile-circle">
+          <img src="${status.fotoProfil}" class="profile-pic" alt="${status.nama}">
+          <div class="profile-name">${status.nama}</div>
+        </div>
+        <div class="status-text">${status.text}</div>
+      `;
+      el.addEventListener('click', () => viewStatus(status.id));
+      return el;
     }
-
-    // Fungsi logout
+    
+    function viewStatus(id) {
+      // Handle view status logic here
+      console.log(`Viewing status ${id}`);
+      // You can implement proper view logic, e.g.:
+      // localStorage.setItem("viewStatus", JSON.stringify(dummyStatuses.find(s => s.id === id)));
+      // window.location.href = "view.html";
+    }
+    
+    // Add click event for Add Status button
+    document.querySelector('.my-status').addEventListener('click', () => {
+      console.log("Add status clicked");
+      // window.location.href = "upload.html";
+    });
+    
+    // Logout button functionality
     document.getElementById("logoutBtn").addEventListener("click", function() {
       localStorage.removeItem("akun");
-      window.location.href = "landing.html";
+      // window.location.href = "landing.html";
+      console.log("Logged out");
     });
-
-    // Check login status
-    function checkLogin() {
-      const akun = localStorage.getItem("akun");
-      if (!akun) {
-        window.location.href = "landing.html";
-      } else {
-        loadStatus();
-        // Refresh status setiap 5 detik
-        setInterval(loadStatus, 5000);
-      }
-    }
-
-    // Periksa status login saat halaman dimuat
-    checkLogin();
+    
+    // Initialize
+    renderStatus();
   </script>
 </body>
 </html>
