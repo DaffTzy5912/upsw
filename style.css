@@ -1,4 +1,4 @@
-/* Tambahkan ini ke file style.css yang sudah ada */
+/* File style.css lengkap dengan perbaikan untuk video preview */
 
 body {
   font-family: Arial, sans-serif;
@@ -138,7 +138,9 @@ button:hover {
   object-fit: cover;
 }
 
+/* Perbaikan untuk tampilan preview */
 .preview-container {
+  position: relative;
   margin-top: 10px;
   max-height: 200px;
   overflow: hidden;
@@ -148,10 +150,55 @@ button:hover {
 .status-preview {
   width: 100%;
   max-height: 200px;
-  object-fit: contain;
+  object-fit: cover; /* Mengubah contain menjadi cover untuk tampilan yang lebih baik */
+}
+
+video.status-preview {
+  background-color: #000; /* Memberi background hitam pada video */
+  display: block;
+}
+
+/* Tambahkan ikon play untuk preview video */
+.preview-container.video-preview::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-left: 25px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 15px solid transparent;
+  pointer-events: none;
 }
 
 .status-caption {
   margin-top: 10px;
   color: #333;
+}
+
+/* Tambahan style untuk tampilan status (dari view.html) */
+.status-media {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.back-button {
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* Tambahan style untuk text area di upload.html */
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+  min-height: 100px;
+  resize: vertical;
 }
